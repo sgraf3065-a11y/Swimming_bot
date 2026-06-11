@@ -1,0 +1,31 @@
+# Секреты и ключи — НИКОГДА не коммитить
+.env
+credentials.json
+token.json
+client_secret_*.json
+
+# База данных
+*.db
+*.db-shm
+*.db-wal
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# Logs
+*.log
+logs/
