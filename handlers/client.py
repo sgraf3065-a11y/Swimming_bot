@@ -8,7 +8,7 @@ from telegram.ext import (
 )
 from config import TRAINER_CHAT_ID, TIMEZONE
 from calendar_service import get_free_slots, create_booking, cancel_event
-from claude_service import chat, parse_booking, clean_response
+from claude_service import chat, parse_booking, clean_response, trainer_chat
 from database import save_booking, upsert_client, get_client_bookings, cancel_booking
 
 logger = logging.getLogger(__name__)
@@ -314,6 +314,17 @@ async def cb_cancel_booking(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
     uid = update.effective_user.id
+
+    # Если пишет тренер — отдельный обработчик
+    if uid == TRAINER_CHAT_ID:
+        await context.bot.send_chat_action(chat_id=uid, action="typing")
+        try:
+            reply = await trainer_chat(text)
+            await update.message.reply_text(reply)
+        except Exception as e:
+            logger.error(f"Trainer Claude error: {e}")
+            await update.message.reply_text("Ошибка, попробуй ещё раз.")
+        return
 
     # Ответ на напоминание ДА/НЕТ
     low = text.lower()

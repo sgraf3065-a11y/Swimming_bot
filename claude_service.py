@@ -1,7 +1,7 @@
 from __future__ import annotations
 import logging
 import anthropic
-from config import ANTHROPIC_API_KEY, SYSTEM_PROMPT
+from config import ANTHROPIC_API_KEY, SYSTEM_PROMPT, TRAINER_SYSTEM_PROMPT
 from database import get_history, save_message
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,20 @@ async def chat(telegram_id: int, user_text: str) -> str:
     reply = response.content[0].text
     save_message(telegram_id, "assistant", reply)
     return reply
+
+
+async def trainer_chat(user_text: str, calendar_context: str = "") -> str:
+    system = TRAINER_SYSTEM_PROMPT
+    if calendar_context:
+        system += f"\n\nДанные из календаря на сегодня:\n{calendar_context}"
+
+    response = await _client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        system=system,
+        messages=[{"role": "user", "content": user_text}],
+    )
+    return response.content[0].text
 
 
 def parse_booking(response_text: str) -> dict | None:
